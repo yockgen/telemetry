@@ -1,0 +1,14 @@
+# SPDX-FileCopyrightText: (C) 2022 Intel Corporation
+# SPDX-License-Identifier: LicenseRef-Intel
+
+# Ignore git and cache folders
+.git
+.cache
+
+# Ignore internal folders
+sample-apps
+test_scripts
+robot
+
+# Ignore build directory
+build

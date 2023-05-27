@@ -1,0 +1,8 @@
+spec:
+  ports:
+    - appProtocol: https
+      name: https
+      nodePort: 31244
+      port: 443
+      protocol: TCP
+      targetPort: https

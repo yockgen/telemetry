@@ -1,0 +1,34 @@
+# SPDX-FileCopyrightText: (C) 2022 Intel Corporation
+# SPDX-License-Identifier: LicenseRef-Intel
+
+# EditorConfig - http://editorconfig.org/
+# Install the EditorConfig plugin for your favorite editor to benefit from this.
+
+root = true
+
+[*]
+charset = utf-8
+indent_size = 4
+indent_style = tab
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{tf,tfvars,hcl}]
+indent_size = 2
+indent_style = space
+
+[*.{yaml,yml}]
+indent_size = 2
+indent_style = space
+
+[*.md]
+indent_style = space
+
+[Earthfile]
+indent_size = 4
+indent_style = space
+
+[*.py]
+indent_size = 4
+indent_style = space

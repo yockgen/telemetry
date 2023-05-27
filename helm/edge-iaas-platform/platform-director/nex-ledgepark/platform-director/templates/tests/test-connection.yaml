@@ -1,0 +1,17 @@
+# SPDX-FileCopyrightText: (C) 2023 Intel Corporation
+# SPDX-License-Identifier: LicenseRef-Intel
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "edge-iaas-platform.fullname" . }}-test-connection"
+  labels:
+    {{- include "edge-iaas-platform.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['{{ include "edge-iaas-platform.fullname" . }}:{{ .Values.service.port }}']
+  restartPolicy: Never

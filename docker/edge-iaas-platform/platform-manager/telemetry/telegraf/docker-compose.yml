@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+  telegraf:
+    image: telegraf:latest
+    user: 1000:1000
+    volumes:
+      - ${CONFIG}:/etc/telegraf/telegraf.conf
+      # required mapping for powerstat
+      - /sys/devices/virtual/powercap/intel-rapl:/sys/devices/virtual/powercap/intel-rapl
+      # required mapping for RDT
+      - /usr/local/bin/pqos:/usr/local/bin/pqos
+      # required mapping for pmu
+      - /home/user/pmu-events:/pmu-events
+      # required mapping for kubernetes
+      - /home/user/k8telegraf/token:/token
+      # required mapping for dpdk
+      - /var/run/dpdk/rte:/var/run/dpdk/rte
+      # required mapping for ras
+      - /var/lib/rasdaemon:/var/lib/rasdaemon

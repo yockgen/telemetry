@@ -1,0 +1,22 @@
+# SPDX-FileCopyrightText: (C) 2022 Intel Corporation
+# SPDX-License-Identifier: LicenseRef-Intel
+
+build/
+.DS_Store
+
+# Robot tests
+log.html
+output.xml
+report.html
+workdir
+
+# pyc, files and folders
+__pycache__/
+*.pyc
+
+# Test DBs
+*.db
+*.swp
+
+# IDE files
+.vscode

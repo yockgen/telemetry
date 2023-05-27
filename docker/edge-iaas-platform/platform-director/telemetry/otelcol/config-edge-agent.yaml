@@ -1,0 +1,35 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+
+exporters:
+  otlp:
+    endpoint: http://192.168.1.107:52123    
+    tls:
+      insecure: true
+
+service:
+
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp]
+      #exporters: [influxdb]
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp]
+      #exporters: [influxdb]
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp]
+
+

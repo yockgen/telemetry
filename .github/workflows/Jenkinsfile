@@ -1,0 +1,297 @@
+import groovy.json.JsonOutput
+
+// Read PRdetails.json for commit_sha
+def getConfig() {
+    props = readYaml file: "${WORKSPACE}/engservices/tools/github/PRdetails.json"
+    commit_sha = "${props.head.sha}"
+}
+
+pipeline {
+    agent {
+        node {
+            label "IAAS-BUILD"
+        }
+    }
+    //Trigger by PR comment
+    triggers {
+        GenericTrigger(
+            
+            // For payload content variable
+            genericVariables: [
+                [key: 'payload', value: '$']
+            ],
+
+            //Trigger cause
+            causeString: "Triggered by iaas-platform generic-webhook-trigger",
+
+            //Use Jenkins job name as token for webhook
+            token: 'iaas-platform-ci',
+
+            printContributedVariables: true,
+            printPostContent: true,
+            silentResponse: false,
+            )
+    }
+    environment {
+        http_proxy = "http://proxy-us.intel.com:911"
+        https_proxy = "http://proxy-us.intel.com:912"
+        no_proxy = "127.0.0.1,localhost,intel.com,.intel.com"
+
+        HTTP_PROXY = "http://proxy-us.intel.com:911"
+        HTTPS_PROXY = "http://proxy-us.intel.com:912"
+        NO_PROXY = "127.0.0.1,localhost,intel.com,.intel.com"
+        BINARIES_DIR="${WORKSPACE}/binaries"
+        BDBA_SCAN_DIR = "BDBA_SCAN"
+        BDPROJNAME = "EDGE_IAAS_PLATFORM"
+        VIRUS_SCAN_DOCKER_IMAGE="amr-registry.caas.intel.com/esc-devops/utils/uvscan/linux/uvscan-app:20210726_0951"
+    }
+    parameters{
+        string(name: 'branch_identifier', defaultValue: 'refs/heads/main', description: 'Manifest Branch to build')
+    }
+
+    stages {
+        stage('CLEAN') {
+            steps {
+                deleteDir()
+            }
+        }
+        stage('BUILD: Get PR details') {
+            steps {
+                checkout($class: 'GitSCM',
+                userRemoteConfigs: [[credentialsId: 'GitHub-Token', url: 'https://github.com/intel-innersource/libraries.devops.henosis.build.automation.services.git']],
+                branches: [[name: 'refs/heads/master']],
+                extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'engservices'],
+                [$class: 'ScmName', name: 'engservices'],
+                [$class: 'CloneOption', timeout: 60],
+                [$class: 'CleanBeforeCheckout'],
+                [$class: 'CheckoutOption', timeout: 60]])
+
+                script {
+                    // Extract PR information from the webhook payload
+                    def payload = readJSON text: payload
+                    def repository = payload['repository']['full_name']
+                    
+                    def PR_ID
+
+                    if (payload['number']) {
+                        PR_ID = payload['number']
+                    } else {
+                        PR_ID = payload['issue']['number']
+                    }
+
+
+                    dir("${WORKSPACE}/engservices/tools/github") {
+                        withCredentials([usernamePassword(credentialsId: 'GitHub-Token', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                            sh """
+                            python3 getPRdetails_github.py --user ${USERNAME} --token ${PASSWORD} --projName ${repository} --prID ${PR_ID}
+                            """
+                        }
+                        script {
+                            if (fileExists('PRdetails.json') ) {
+                                archiveArtifacts artifacts: "PRdetails.json"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        stage('Set status to pending') {
+            steps {
+                script {
+                    // Extract PR information from the webhook payload
+                    def payload = readJSON text: payload
+                    def repository = payload['repository']['full_name']
+
+                    //Get commit_sha information
+                    getConfig()
+
+                    // Prepare the pending status to post
+                    def status = [
+                        'state': 'pending',
+                        'target_url': env.BUILD_URL,
+                        'description': 'Jenkins build started',
+                        'context': 'jenkins/generic-webhook-trigger'
+                    ]
+
+                    def jsonPayload = JsonOutput.toJson(status)
+
+                    withCredentials([string(credentialsId: 'github-api-token', variable: 'access_token')]) {
+                        sh """
+                            curl -s -H "Authorization: token ${access_token}" -H "Accept: application/vnd.github.v3+json" -X POST -d '${jsonPayload}' "https://api.github.com/repos/${repository}/statuses/${commit_sha}"
+                        """
+                    }
+                }
+            }
+        }
+        stage('SCM') {
+            steps {
+                checkout([$class: 'GitSCM',
+                userRemoteConfigs: [[credentialsId: 'GitHub-Token', url: 'https://github.com/intel-innersource/infrastructure.edge.iaas.platform.git']],
+                branches: [[name: "${params.branch_identifier}"]],
+                extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'iaas-platform'],
+                [$class: 'ScmName', name: 'iaas-platform'],
+                [$class: 'CleanBeforeCheckout']]])
+                
+                checkout changelog: false, scm: ([$class: 'GitSCM',
+                userRemoteConfigs: [[credentialsId: 'GitHub-Token', url: 'https://github.com/intel-innersource/libraries.devops.henosis.build.automation.services.git']],
+                branches: [[name: 'refs/heads/master']],
+                extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'esc-engservices'],
+                [$class: 'ScmName', name: 'esc-engservices'],
+                [$class: 'CloneOption', timeout: 60],
+                [$class: 'CleanBeforeCheckout'],
+                [$class: 'CheckoutOption', timeout: 60]]])
+            }
+        }
+        stage('Run Lint'){
+            steps {
+                script {
+                    dir("${WORKSPACE}/iaas-platform") {
+                        sh """#!/bin/bash -xe
+                            earthly +lint
+                        """
+                    }
+                }
+            }
+        }
+        stage('Run Test'){
+            steps {
+                script {
+                    dir("${WORKSPACE}/iaas-platform") {
+                        sh """#!/bin/bash -xe
+                            earthly +test
+                        """
+                    }
+                }
+            }
+        }
+        stage('Run Build api'){
+            steps {
+                script {
+                    dir("${WORKSPACE}/iaas-platform") {
+                        sh """#!/bin/bash -xe
+                            eval \$(ssh-agent) > /dev/null
+                            earthly +build-api
+                            mkdir -p ${BINARIES_DIR}
+                            cp -r build/exe ${BINARIES_DIR}
+                        """
+                    }
+                }
+            }
+        }
+        stage('Run Docker api'){
+            steps {
+                script {
+                    dir("${WORKSPACE}/iaas-platform") {
+                        sh """#!/bin/bash -xe
+                            eval \$(ssh-agent) > /dev/null
+                            earthly --no-cache +docker-api
+                        """
+                    }
+                }
+            }
+        }
+        stage('QA: BDBA') {
+            steps {
+                dir("${BINARIES_DIR}") {
+                    zip(zipFile: "${BDBA_SCAN_DIR}/${JOB_NAME}.zip")
+                }
+                dir("${BINARIES_DIR}") {
+                    withCredentials([usernamePassword(credentialsId: 'BuildAutomation', passwordVariable: 'BDPWD', usernameVariable: 'BDUSR')]) {
+                        sh """#!/bin/bash -xe
+                        python ${WORKSPACE}/esc-engservices/tools/bdba/bdbascan.py -u ${BDUSR} -p ${BDPWD} -so ${BINARIES_DIR}/${BDBA_SCAN_DIR}/${JOB_NAME}.zip  -o ${BINARIES_DIR}"""
+                    }
+                }
+            }
+        }
+        stage('QA: PROTEX') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'BuildAutomation', passwordVariable: 'BDPWD', usernameVariable: 'BDUSR')]) {
+                echo "STEP_TOOL: PROTEX SCANNING"
+                    
+                    dir("${WORKSPACE}/esc-engservices/tools/protex") {
+                        withEnv(["PATH=" + env.PATH + ":/nfs/png/disks/ecg_es_disk2/engsrv/tools/protexIP/bin"]) {
+                        sh """python -u bdscan.py --server https://amrprotex007.devtools.intel.com --verbose --name ${BDPROJNAME} --path ${WORKSPACE}/iaas-platform --cos ${WORKSPACE}/esc-engservices/tools/protex/ --obl ${WORKSPACE}/esc-engservices/tools/protex/
+                        """
+                        stash name: "protex_reports",includes: "*.xlsx"
+                        }
+                    }
+                }
+            }
+        }
+        stage ('QA: SNYK') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'snyk', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                sh """#!/bin/bash -xe
+                    echo "STEP_TOOL: SNYK SCAN FOR DOCKER"
+                    docker run --rm -e SNYK_TOKEN=${PASSWORD} -e SNYK_API="https://snyk.devtools.intel.com/api" -e COMMAND="cd ${WORKSPACE}/iaas-platform && snyk test --docker edge-iaas-api:latest  --json-file-output=docker.json | tee docker.txt" \
+                    -v /var/run/docker.sock:/var/run/docker.sock -v ${WORKSPACE}:${WORKSPACE} \
+                    snyk/snyk:docker snyk monitor --docker edge-iaas-api:latest --project-name=IAAS_PLATFORM_CI.DOCKER --org=iotg_aspe_pse
+                    docker run --rm -v ${WORKSPACE}:${WORKSPACE} amr-registry.caas.intel.com/esc-devops/utils/snyk/snyk-to-html:20200902_1500 snyk-to-html -i ${WORKSPACE}/iaas-platform/docker.json -o ${WORKSPACE}/binaries/docker_snyk_report.html
+                """
+                }
+            }    
+        }
+        stage("QA: VIRUS SCAN"){
+            steps {
+                dir("${WORKSPACE}/binaries"){
+                    unstash "protex_reports"
+                    sh "docker run --rm -e SCAN_PATH=/binaries -e LOG=virus-scan-report.txt -v ${WORKSPACE}/binaries:/binaries \
+                    ${VIRUS_SCAN_DOCKER_IMAGE}"
+                }
+            }
+        }
+        stage('Publish'){
+            steps {
+                script {
+                    sh """#!/bin/bash -xe
+                        # Artifacts to be published
+                        true
+                    """
+                }
+            }
+        }
+        stage('Run Validation'){
+            steps {
+                script {
+                    sh """#!/bin/bash -xe
+                        # Validation to be added
+                        true
+                    """
+                }
+            }
+        }
+    }
+    post {
+        always {
+            script {
+                // Extract PR information from the webhook payload
+                def payload = readJSON text: payload
+                def repository = payload['repository']['full_name']
+
+                //Get commit_sha information
+                getConfig()
+
+                // Set the build result message and status
+                def build_result = currentBuild.result ?: 'SUCCESS'
+                def build_status = build_result == 'SUCCESS' ? 'success' : 'failure'
+                def build_description = "Jenkins build result: **${build_result}**"
+
+                // Prepare the status to post
+                def status = [
+                    'state': build_status,
+                    'target_url': env.BUILD_URL,
+                    'description': build_description,
+                    'context': 'jenkins/generic-webhook-trigger'
+                ]
+
+                def jsonPayload = JsonOutput.toJson(status)
+
+                withCredentials([string(credentialsId: 'github-api-token', variable: 'access_token')]) {
+                    sh """
+                        curl -s -H "Authorization: token ${access_token}" -H "Accept: application/vnd.github.v3+json" -X POST -d '${jsonPayload}' "https://api.github.com/repos/${repository}/statuses/${commit_sha}"
+                    """
+                }
+            }
+        }
+    }
+}

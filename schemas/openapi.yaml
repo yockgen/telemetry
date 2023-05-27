@@ -1,0 +1,155 @@
+# SPDX-FileCopyrightText: (C) 2023 Intel Corporation
+# SPDX-License-Identifier: LicenseRef-Intel
+openapi: 3.0.3
+info:
+  title: Platform Director API
+  version: 0.1.0
+  license:
+    name: Intel Proprietary License
+    url: 'https://edge-iaas.app.intel.com/licenses/intel.txt'
+servers:
+  - url: '{apiRoot}/v1'
+    variables:
+      apiRoot:
+        default: 'https://edge-iaas.example.intel.com'
+security: []
+externalDocs:
+  url: https://edge-iaas.app.intel.com/
+  description: Product specifications and designs
+paths:
+  /version:
+    get:
+      summary: Return the semantic version of the Platform Director.
+      responses:
+        '200':    # status code
+          description: Platform Version
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  version:
+                    type: string
+                    description: Semantic Version of the API
+                    example: "0.4.2"
+  /clusters:
+    get:
+      responses:
+        '200':
+          description: Array of all kubernetes clusters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  organzations:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Cluster'
+                    minItems: 0
+  /nodes:
+    get:
+      responses:
+        '200':
+          description: Array of all bare metal nodes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  organzations:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Node'
+                    minItems: 0
+  /organizations:
+    get:
+      responses:
+        '200':
+          description: Array of all orgnizations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  organzations:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Organization'
+                    minItems: 0
+components:
+  schemas:
+    ProblemDetails:
+      description: A problem detail compliant to RFC 7807
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: number
+        detail:
+          type: string
+        instance:
+          type: string
+    Cluster:
+      type: object
+      properties:
+        id:
+          type: string
+    Node:
+      type: object
+      properties:
+        id:
+          type: string
+    Organization:
+      type: object
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+  responses:
+    400-BadRequest:
+      description: Object in payload not properly formulated or not related to the method
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    404-NotFound:
+      description: No resource found at the URI
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    405-MethodNotAllowed:
+      description: Method not allowed for the URI
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    409-Conflict:
+      description: Request could not be processed in the current state of the resource
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    429-TooManyRequests:
+      description: Too many requests have been sent in a given amount of time
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    500-InternalServerError:
+      description: The provider is currently unable to handle the request due to an internal error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    503-ServiceUnavailable:
+      description: The provider is currently unable to handle the request due to a temporary overload
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'

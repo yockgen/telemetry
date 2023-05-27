@@ -1,0 +1,39 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: telemetry-intel-local
+  namespace: default
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: telemetry.yockgen.grafana
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: intel-grafana
+            port:
+              number: 32602
+
+  - host: telemetry.yockgen.influxdb
+    http:
+      paths:
+      - backend:
+          service:
+            name: intel-influxdb2
+            port:
+              number: 32702
+        path: /
+        pathType: Prefix
+
+  tls:
+    - hosts:
+      - telemetry.intel.local
+      secretName: intel-telemetry-tls-secret
+
+status:
+  loadBalancer: {}

@@ -1,0 +1,55 @@
+// Generate gRPC stubs with protoc
+// protoc --proto_path=<path> --go_out=<internal directory> --go-grpc_out=<internal directory> telemetry-nb.proto
+syntax = "proto3";
+
+option go_package = "./telemetrymgr";
+
+
+// Represents a metric result
+message GetMetricResultResponse {
+    string measurement = 1;
+    string host = 2;
+    double value = 3;
+    string start = 4;
+    string stop = 5;
+}
+
+// Represents a target metric 
+message GetMetricResponse {
+    string measurement = 1;    
+}
+
+// Represents a target host
+message GetHostResponse {
+    string host = 1;    
+}
+
+// Represents a Telemetry Group instance
+message GetGroupResponse {
+    string id = 1;
+    string name = 2;
+    uint32 interval = 3;
+    uint32 latency = 4;
+    repeated GetMetricResponse metric = 5;
+    repeated GetHostResponse host = 6;
+    repeated GetMetricResultResponse result = 7;
+}
+
+// Represents an array of Telemetry Group instances
+message GetGroupsResponse {
+    repeated GetGroupResponse groups = 1;
+}
+
+// Representing an index within a collection
+message GetGroupRequest {
+    uint32 index = 1;
+}
+
+// Represents a parameter-less message for retrieving array of group IDs
+message GetGroupsRequest {}
+
+// Represents the external Service interface to the Telemetry Manager
+service TelemetryServiceExternal {
+    rpc GetGroups(GetGroupsRequest) returns (GetGroupsResponse) {}
+    rpc GetGroup(GetGroupRequest) returns (GetGroupResponse) {}
+}

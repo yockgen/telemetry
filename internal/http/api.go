@@ -36,5 +36,17 @@ func (api *API) Root() chi.Router {
 		}
 	})
 
+	r.Get("/clusters", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotImplemented)
+	})
+
+	r.Get("/nodes", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotImplemented)
+	})
+
+	r.Get("/organizations", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotImplemented)
+	})
+
 	return r
 }

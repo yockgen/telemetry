@@ -12,6 +12,7 @@ message GetMetricResultResponse {
     double value = 3;
     string start = 4;
     string stop = 5;
+        
 }
 
 // Represents a target metric 

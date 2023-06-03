@@ -21,10 +21,10 @@ const (
 )
 
 type Query struct {
-	UserId string `json:"id"`
-	Token  string `json:"token"`
-	Group  string `json:"group"`
-	Test   string `json:"test"`
+	Group  string
+	Metric []string
+	Host   []string
+	Test   string
 }
 
 type DataResult struct {

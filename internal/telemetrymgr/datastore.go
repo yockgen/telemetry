@@ -11,6 +11,15 @@ func getGroups() (*GetGroupsResponse, error) {
 	}, nil
 }
 
+// Retrieve a group from persistent storage, this is a dummy function, TODO: get from database
+func _getGroup(idx uint32) *GetGroupResponse {
+
+	if idx < uint32(len(dummyGroups)) {
+		return dummyGroups[idx]
+	}
+	return nil
+}
+
 // Retrieve a specific group by index from storage
 func getGroup(req *GetGroupRequest) (*GetGroupResponse, error) {
 
@@ -22,16 +31,26 @@ func getGroup(req *GetGroupRequest) (*GetGroupResponse, error) {
 		return nil, nil
 	}
 
+	//var reqParam *GetGroupResponse = dummyGroups[req.Index]
+	reqParam := _getGroup(req.Index)
+
+	//grpc message conversion to customized influx param structure
+	for _, param := range reqParam.Metric {
+		//fmt.Println("metrices=", param.Measurement)
+		qry.Metric = append(qry.Metric, param.Measurement)
+
+	}
+
+	for _, param := range reqParam.Host {
+		//fmt.Println("Host=", param.Host)
+		qry.Host = append(qry.Metric, param.Host)
+
+	}
+
+	//query influxdb
 	rawResult = retrieveData(qry)
 	result = rawtogrpc(rawResult)
 
 	return result, nil
-
-	//if req != nil {
-	//	if req.Index < uint32(len(dummyGroups)) {
-	///return dummyGroups[req.Index], nil
-	//}
-	//}
-	//return nil, nil
 
 }

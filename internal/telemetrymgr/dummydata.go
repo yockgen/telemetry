@@ -7,26 +7,26 @@ package telemetrymgr
 // Static target metric result
 var dummyTargetMetrices = []*GetMetricResponse{
 	{
-		Measurement: "temperature",
+		Measurement: "mem_used_percent",
 	},
 	{
-		Measurement: "cpu_idle",
+		Measurement: "cpu_usage_idle",
 	},
 	{
-		Measurement: "temperature",
+		Measurement: "powerstat_package_current_power_consumption_watts",
 	},
 }
 
 // Static target metric result
 var dummyTargetHosts = []*GetHostResponse{
 	{
-		Host: "server-1",
+		Host: "TGL01",
 	},
 	{
-		Host: "server-2",
+		Host: "TGL02",
 	},
 	{
-		Host: "server-3",
+		Host: "KBL01",
 	},
 }
 

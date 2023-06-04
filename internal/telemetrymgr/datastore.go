@@ -43,7 +43,7 @@ func getGroup(req *GetGroupRequest) (*GetGroupResponse, error) {
 
 	for _, param := range reqParam.Host {
 		//fmt.Println("Host=", param.Host)
-		qry.Host = append(qry.Metric, param.Host)
+		qry.Host = append(qry.Host, param.Host)
 
 	}
 

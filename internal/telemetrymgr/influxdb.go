@@ -40,9 +40,23 @@ func retrieveData(qryObj Query) []DataResult {
 	var dataItx DataResult
 	var dataResult []DataResult
 	var fluxQuery string
+	var metrices, hosts string
 
-	metrices := "cpu_usage_idle"
-	fmt.Println(metrices)
+	//metrices = "cpu_usage_idle|mem_used_percent"
+	for i, itx := range qryObj.Metric {
+		metrices = metrices + itx
+		if i < len(qryObj.Metric)-1 {
+			metrices = metrices + "|"
+		}
+	}
+
+	//hosts = "TGL01|KBL01"
+	for i, itx := range qryObj.Host {
+		hosts = hosts + itx
+		if i < len(qryObj.Host)-1 {
+			hosts = hosts + "|"
+		}
+	}
 
 	client := influxdb2.NewClient(influxURL, influxToken)
 	defer client.Close()
@@ -50,7 +64,7 @@ func retrieveData(qryObj Query) []DataResult {
 	// Create a Flux query, TODO: need to modularized influx syntax
 	fluxQuery = fmt.Sprintf(`from(bucket: "%s")
 		|> range(start: -15m)
-		|> filter(fn: (r) => r._measurement == "%s")`, influxBucket, metrices)
+		|> filter(fn: (r) => r._measurement =~ /^%s$/ and r.host =~ /^%s$/)`, influxBucket, metrices, hosts)
 
 	fmt.Println("QRY::", fluxQuery)
 

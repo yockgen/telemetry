@@ -15,76 +15,76 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-// This is the main group command under which all groups sub-commands
+// This is the main collections command under which all collection sub-commands
 // and operations are supported.
-var groupCmd = &cobra.Command{
-	Use:   "groups",
-	Short: "Executes commands based on a telemetry group",
-	Long: `Manages telemetry groups enabling creation, updating, deleting and
-retreving details about a telemetry group. Telemetry groups are
+var collectionCmd = &cobra.Command{
+	Use:   "collections",
+	Short: "Executes commands based on a telemetry collection",
+	Long: `Manages telemetry collections enabling creation, updating, deleting and
+retreving details about a telemetry collection. Telemetry collections are
 managed on a per tenant basis in platform director isolated across users.`,
-	Aliases: []string{"group"},
+	Aliases: []string{"collection"},
 	Args:    cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 	},
 }
 
-// This is the command to enumerate, list all the groups.
+// This is the command to enumerate, list all the collections.
 var listCmd = &cobra.Command{
 	Use:   "list",
-	Short: "Lists all the telemetry groups",
+	Short: "Lists all the telemetry collections",
 	Run: func(cmd *cobra.Command, args []string) {
-		list, err := GetTelemetryGroups()
+		list, err := GetTelemetryCollections()
 		if err == nil {
 			fmt.Printf("%+v", list)
 		}
 	},
 }
 
-// This is the command to retrieve a specifc group by ID.
+// This is the command to retrieve a specifc collection by ID.
 var getCmd = &cobra.Command{
 	Use:   "get",
-	Short: "Get an instance of a telemetry group",
+	Short: "Get an instance of a telemetry collection",
 	Run: func(cmd *cobra.Command, args []string) {
 
 		idx, _ := cmd.Flags().GetUint32("id")
-		group, err := GetTelemetryGroup(idx)
+		collection, err := GetTelemetryCollection(idx)
 		if err == nil {
-			fmt.Printf("test %+v", group)
+			fmt.Printf("test %+v", collection)
 		}
 	},
 }
 
-// Retrieves all telemetry groups from the Telemetry Manager
-func GetTelemetryGroups() (*tm.GetGroupsResponse, error) {
+// Retrieves all telemetry collections from the Telemetry Manager
+func GetTelemetryCollections() (*tm.GetCollectionsResponse, error) {
 
-	list, err := getTelemetryGrpcClient().GetGroups(context.Background(), &tm.GetGroupsRequest{})
+	list, err := getTelemetryGrpcClient().GetCollections(context.Background(), &tm.GetCollectionsRequest{})
 	if nil != err {
-		fmt.Printf("Error getting the list of groups %v", err)
+		fmt.Printf("Error getting the list of collections %v", err)
 	}
 	return list, err
 }
 
-// Retrieves a telemetry group instance by ID from Telemetry Manager
-func GetTelemetryGroup(idx uint32) (*tm.GetGroupResponse, error) {
+// Retrieves a telemetry collection instance by ID from Telemetry Manager
+func GetTelemetryCollection(idx uint32) (*tm.GetCollectionResponse, error) {
 
-	group, err := getTelemetryGrpcClient().GetGroup(context.Background(), &tm.GetGroupRequest{Index: idx})
+	collection, err := getTelemetryGrpcClient().GetCollection(context.Background(), &tm.GetCollectionRequest{Index: idx})
 
 	if nil != err {
-		fmt.Printf("Error getting group instance %v", err)
+		fmt.Printf("Error getting collection instance %v", err)
 	}
 
-	return group, err
+	return collection, err
 }
 
 // Init function is used to to build the command hierarchy and configuring
 // flags - global and local to context
 func init() {
 
-	telemetryCmd.AddCommand(groupCmd)
-	groupCmd.AddCommand(listCmd)
-	groupCmd.AddCommand(getCmd)
-	getCmd.PersistentFlags().Uint32("id", 0, "Identifies a telemetry group instance")
+	telemetryCmd.AddCommand(collectionCmd)
+	collectionCmd.AddCommand(listCmd)
+	collectionCmd.AddCommand(getCmd)
+	getCmd.PersistentFlags().Uint32("id", 0, "Identifies a telemetry collection instance")
 }
 
 func getTelemetryGrpcClient() tm.TelemetryServiceExternalClient {

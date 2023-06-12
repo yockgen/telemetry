@@ -55,8 +55,8 @@ var dummyMetrices = []*GetMetricResultResponse{
 	},
 }
 
-// Static sample data for an array of telemetry groups
-var dummyGroups = []*GetGroupResponse{
+// Static sample data for an array of telemetry collections
+var dummyCollections = []*GetCollectionResponse{
 	{
 		Id:       "1",
 		Name:     "cpu-core",
@@ -64,7 +64,6 @@ var dummyGroups = []*GetGroupResponse{
 		Latency:  5,
 		Metric:   dummyTargetMetrices,
 		Host:     dummyTargetHosts,
-		//Result:   dummyMetrices,
 	},
 	{
 		Id:       "2",
@@ -73,7 +72,6 @@ var dummyGroups = []*GetGroupResponse{
 		Latency:  2,
 		Metric:   dummyTargetMetrices,
 		Host:     dummyTargetHosts,
-		//Result:   dummyMetrices,
 	},
 	{
 		Id:       "3",
@@ -82,6 +80,5 @@ var dummyGroups = []*GetGroupResponse{
 		Latency:  60,
 		Metric:   dummyTargetMetrices,
 		Host:     dummyTargetHosts,
-		//Result:   dummyMetrices,
 	},
 }

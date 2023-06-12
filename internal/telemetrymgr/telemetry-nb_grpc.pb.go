@@ -22,16 +22,16 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	TelemetryServiceExternal_GetGroups_FullMethodName = "/TelemetryServiceExternal/GetGroups"
-	TelemetryServiceExternal_GetGroup_FullMethodName  = "/TelemetryServiceExternal/GetGroup"
+	TelemetryServiceExternal_GetCollections_FullMethodName = "/TelemetryServiceExternal/GetCollections"
+	TelemetryServiceExternal_GetCollection_FullMethodName  = "/TelemetryServiceExternal/GetCollection"
 )
 
 // TelemetryServiceExternalClient is the client API for TelemetryServiceExternal service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type TelemetryServiceExternalClient interface {
-	GetGroups(ctx context.Context, in *GetGroupsRequest, opts ...grpc.CallOption) (*GetGroupsResponse, error)
-	GetGroup(ctx context.Context, in *GetGroupRequest, opts ...grpc.CallOption) (*GetGroupResponse, error)
+	GetCollections(ctx context.Context, in *GetCollectionsRequest, opts ...grpc.CallOption) (*GetCollectionsResponse, error)
+	GetCollection(ctx context.Context, in *GetCollectionRequest, opts ...grpc.CallOption) (*GetCollectionResponse, error)
 }
 
 type telemetryServiceExternalClient struct {
@@ -42,18 +42,18 @@ func NewTelemetryServiceExternalClient(cc grpc.ClientConnInterface) TelemetrySer
 	return &telemetryServiceExternalClient{cc}
 }
 
-func (c *telemetryServiceExternalClient) GetGroups(ctx context.Context, in *GetGroupsRequest, opts ...grpc.CallOption) (*GetGroupsResponse, error) {
-	out := new(GetGroupsResponse)
-	err := c.cc.Invoke(ctx, TelemetryServiceExternal_GetGroups_FullMethodName, in, out, opts...)
+func (c *telemetryServiceExternalClient) GetCollections(ctx context.Context, in *GetCollectionsRequest, opts ...grpc.CallOption) (*GetCollectionsResponse, error) {
+	out := new(GetCollectionsResponse)
+	err := c.cc.Invoke(ctx, TelemetryServiceExternal_GetCollections_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *telemetryServiceExternalClient) GetGroup(ctx context.Context, in *GetGroupRequest, opts ...grpc.CallOption) (*GetGroupResponse, error) {
-	out := new(GetGroupResponse)
-	err := c.cc.Invoke(ctx, TelemetryServiceExternal_GetGroup_FullMethodName, in, out, opts...)
+func (c *telemetryServiceExternalClient) GetCollection(ctx context.Context, in *GetCollectionRequest, opts ...grpc.CallOption) (*GetCollectionResponse, error) {
+	out := new(GetCollectionResponse)
+	err := c.cc.Invoke(ctx, TelemetryServiceExternal_GetCollection_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -64,8 +64,8 @@ func (c *telemetryServiceExternalClient) GetGroup(ctx context.Context, in *GetGr
 // All implementations must embed UnimplementedTelemetryServiceExternalServer
 // for forward compatibility
 type TelemetryServiceExternalServer interface {
-	GetGroups(context.Context, *GetGroupsRequest) (*GetGroupsResponse, error)
-	GetGroup(context.Context, *GetGroupRequest) (*GetGroupResponse, error)
+	GetCollections(context.Context, *GetCollectionsRequest) (*GetCollectionsResponse, error)
+	GetCollection(context.Context, *GetCollectionRequest) (*GetCollectionResponse, error)
 	mustEmbedUnimplementedTelemetryServiceExternalServer()
 }
 
@@ -73,11 +73,11 @@ type TelemetryServiceExternalServer interface {
 type UnimplementedTelemetryServiceExternalServer struct {
 }
 
-func (UnimplementedTelemetryServiceExternalServer) GetGroups(context.Context, *GetGroupsRequest) (*GetGroupsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetGroups not implemented")
+func (UnimplementedTelemetryServiceExternalServer) GetCollections(context.Context, *GetCollectionsRequest) (*GetCollectionsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetCollections not implemented")
 }
-func (UnimplementedTelemetryServiceExternalServer) GetGroup(context.Context, *GetGroupRequest) (*GetGroupResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetGroup not implemented")
+func (UnimplementedTelemetryServiceExternalServer) GetCollection(context.Context, *GetCollectionRequest) (*GetCollectionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetCollection not implemented")
 }
 func (UnimplementedTelemetryServiceExternalServer) mustEmbedUnimplementedTelemetryServiceExternalServer() {
 }
@@ -93,38 +93,38 @@ func RegisterTelemetryServiceExternalServer(s grpc.ServiceRegistrar, srv Telemet
 	s.RegisterService(&TelemetryServiceExternal_ServiceDesc, srv)
 }
 
-func _TelemetryServiceExternal_GetGroups_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetGroupsRequest)
+func _TelemetryServiceExternal_GetCollections_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetCollectionsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(TelemetryServiceExternalServer).GetGroups(ctx, in)
+		return srv.(TelemetryServiceExternalServer).GetCollections(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: TelemetryServiceExternal_GetGroups_FullMethodName,
+		FullMethod: TelemetryServiceExternal_GetCollections_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TelemetryServiceExternalServer).GetGroups(ctx, req.(*GetGroupsRequest))
+		return srv.(TelemetryServiceExternalServer).GetCollections(ctx, req.(*GetCollectionsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _TelemetryServiceExternal_GetGroup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetGroupRequest)
+func _TelemetryServiceExternal_GetCollection_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetCollectionRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(TelemetryServiceExternalServer).GetGroup(ctx, in)
+		return srv.(TelemetryServiceExternalServer).GetCollection(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: TelemetryServiceExternal_GetGroup_FullMethodName,
+		FullMethod: TelemetryServiceExternal_GetCollection_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TelemetryServiceExternalServer).GetGroup(ctx, req.(*GetGroupRequest))
+		return srv.(TelemetryServiceExternalServer).GetCollection(ctx, req.(*GetCollectionRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -137,12 +137,12 @@ var TelemetryServiceExternal_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*TelemetryServiceExternalServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GetGroups",
-			Handler:    _TelemetryServiceExternal_GetGroups_Handler,
+			MethodName: "GetCollections",
+			Handler:    _TelemetryServiceExternal_GetCollections_Handler,
 		},
 		{
-			MethodName: "GetGroup",
-			Handler:    _TelemetryServiceExternal_GetGroup_Handler,
+			MethodName: "GetCollection",
+			Handler:    _TelemetryServiceExternal_GetCollection_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

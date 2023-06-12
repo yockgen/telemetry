@@ -14,7 +14,7 @@ var telemetryCmd = &cobra.Command{
 	Use:   "telemetry",
 	Short: "Perform telemetry command",
 	Long: `The telemetry subcommand enables full management of the telemetry-manager
-functions in Platform Director which includes telemetry-groups, configuration 
+functions in Platform Director which includes telemetry-collections, configuration 
 and and policy management`,
 }
 

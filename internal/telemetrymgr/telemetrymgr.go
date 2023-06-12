@@ -40,17 +40,17 @@ var (
 	once     sync.Once
 )
 
-func (s *telemetrysvc) GetGroups(ctx context.Context, in *GetGroupsRequest) (*GetGroupsResponse, error) {
+func (s *telemetrysvc) GetCollections(ctx context.Context, in *GetCollectionsRequest) (*GetCollectionsResponse, error) {
 
 	log.Printf("Received request: %v", in.ProtoReflect().Descriptor().FullName())
-	return getGroups()
+	return getCollections()
 }
 
-func (s *telemetrysvc) GetGroup(ctx context.Context, in *GetGroupRequest) (*GetGroupResponse, error) {
+func (s *telemetrysvc) GetCollection(ctx context.Context, in *GetCollectionRequest) (*GetCollectionResponse, error) {
 
 	log.Printf("yockgen2 Received request: %v", in.ProtoReflect().Descriptor().FullName())
 	log.Printf("idx: %d", in.Index)
-	return getGroup(in)
+	return getCollection(in)
 }
 
 // Creates a new singelton instance of the Telemeetry service

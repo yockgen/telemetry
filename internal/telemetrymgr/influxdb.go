@@ -21,7 +21,7 @@ const (
 )
 
 type Query struct {
-	Group  string
+	Collection  string
 	Metric []string
 	Host   []string
 	Test   string
@@ -94,7 +94,7 @@ func retrieveData(qryObj Query) []DataResult {
 
 }
 
-func rawtogrpc(dataResult []DataResult) *GetGroupResponse {
+func rawtogrpc(dataResult []DataResult) *GetCollectionResponse {
 
 	var grpcResult = []*GetMetricResultResponse{}
 
@@ -116,7 +116,7 @@ func rawtogrpc(dataResult []DataResult) *GetGroupResponse {
 		grpcResult = append(grpcResult, itxGrpc)
 	}
 
-	var result = &GetGroupResponse{
+	var result = &GetCollectionResponse{
 		Id:       "1",
 		Name:     "cpu-core",
 		Interval: 10,

@@ -25,8 +25,8 @@ message GetHostResponse {
     string host = 1;    
 }
 
-// Represents a Telemetry Group instance
-message GetGroupResponse {
+// Represents a Telemetry Collection instance
+message GetCollectionResponse {
     string id = 1;
     string name = 2;
     uint32 interval = 3;
@@ -36,21 +36,21 @@ message GetGroupResponse {
     repeated GetMetricResultResponse result = 7;
 }
 
-// Represents an array of Telemetry Group instances
-message GetGroupsResponse {
-    repeated GetGroupResponse groups = 1;
+// Represents an array of Telemetry Collection instances
+message GetCollectionsResponse {    
+    repeated GetCollectionResponse collections = 1;
 }
 
 // Representing an index within a collection
-message GetGroupRequest {
+message GetCollectionRequest {
     uint32 index = 1;
 }
 
-// Represents a parameter-less message for retrieving array of group IDs
-message GetGroupsRequest {}
+// Represents a parameter-less message for retrieving array of collection IDs
+message GetCollectionsRequest {}
 
 // Represents the external Service interface to the Telemetry Manager
 service TelemetryServiceExternal {
-    rpc GetGroups(GetGroupsRequest) returns (GetGroupsResponse) {}
-    rpc GetGroup(GetGroupRequest) returns (GetGroupResponse) {}
+    rpc GetCollections(GetCollectionsRequest) returns (GetCollectionsResponse) {}
+    rpc GetCollection(GetCollectionRequest) returns (GetCollectionResponse) {}
 }
